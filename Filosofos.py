@@ -3,32 +3,30 @@ import time
 import tkinter as tk
 from tkinter import Canvas
 
-# --- Configuración inicial ---
+
 N = 5
 VECES_COMER = 6
 
-# Emoticonos de estado
+
 ESTADOS = {
     'pensando': ('😐', 'Pensando'),
     'esperando': ('🍴', 'Esperando tenedores'),
     'comiendo': ('😋', 'Comiendo')
 }
 
-# Estados y contadores
+
 filosofos_estado = ['pensando'] * N
 comidas_realizadas = [0] * N
 
-# Semáforos para los tenedores
+# semsforos para tenedores
 tenedores = [threading.Semaphore(1) for _ in range(N)]
 mutex = threading.Lock()
 
-# --- Interfaz gráfica ---
 ventana = tk.Tk()
 ventana.title("Problema de los Filósofos Comensales")
 canvas = Canvas(ventana, width=900, height=800, bg="white")
 canvas.pack()
 
-# Coordenadas en círculo para los filósofos
 coordenadas = [
     (450, 150),
     (700, 300),
@@ -40,13 +38,13 @@ coordenadas = [
 filosofos_graficos = []
 tenedores_graficos = []
 
-# Dibujar filósofos y tenedores
+#filósofos y tenedores
 for i in range(N):
     x, y = coordenadas[i]
     f = canvas.create_text(x, y, text="", font=("Arial", 18), tags=f"filosofo_{i}", justify="center")
     filosofos_graficos.append(f)
 
-    # Posicionar tenedor entre filósofo y su vecino
+    
     x1, y1 = coordenadas[i]
     x2, y2 = coordenadas[(i+1) % N]
     xt, yt = (x1 + x2) / 2, (y1 + y2) / 2
@@ -105,6 +103,6 @@ def iniciar():
     canvas.create_text(450, 750, text="\u2714 Todos los filósofos han comido 6 veces.", font=("Arial", 20, "bold"), fill="green")
     ventana.update()
 
-# Iniciar programa en segundo plano
+
 threading.Thread(target=iniciar).start()
 ventana.mainloop()
