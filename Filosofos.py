@@ -8,9 +8,9 @@ N = 5
 VECES_COMER = 6
 
 ESTADOS = {
-    'pensando': ('🧠', 'Pensando', '#5DADE2'),
-    'esperando': ('⏳', 'Esperando', '#F5B041'),
-    'comiendo': ('🍝', 'Comiendo', '#58D68D')
+    'pensando': ('🧠', 'Pensando', '#D3CCE3'),
+    'esperando': ('⏳', 'Esperando', '#FAE3D9'),
+    'comiendo': ('🍝', 'Comiendo', '#C8E6C9')
 }
 
 # inicialización de variables
@@ -62,9 +62,9 @@ canvas.create_rectangle(130, 570, 570, 600, fill="#D5F5E3", outline="black", wid
 canvas.create_text(350, 585, text="📘 Descripcion de estados  📘", font=("Arial", 12), fill="black")
 
 leyendas = [
-    ("#5DADE2", "🧠 Pensando"),
-    ("#F5B041", "⏳ Esperando"),
-    ("#58D68D", "🍝 Comiendo"),
+    ("#D3CCE3", "🧠 Pensando"),
+    ("#FAE3D9", "⏳ Esperando"),
+    ("#C8E6C9", "🍝 Comiendo"),
     ("#95A5A6", "🥄 Tenedor libre"),
     ("#EC7063", "🍴 Tenedor en uso")
 ]
