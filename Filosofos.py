@@ -3,7 +3,7 @@ import time
 import tkinter as tk
 from tkinter import Canvas
 
-#constantes
+# constantes
 N = 5
 VECES_COMER = 6
 
@@ -17,22 +17,23 @@ ESTADOS = {
 filosofos_estado = ['pensando'] * N
 comidas_realizadas = [0] * N
 
-# Semáforos para los tenedores
+# semaforos para los tenedores
 tenedores = [threading.Semaphore(1) for _ in range(N)]
 tenedores_estado = [False] * N
 mutex = threading.Lock()
 
-#interfaz
+# interfaz
 ventana = tk.Tk()
-ventana.title("Cena de Filósofos")
-canvas = Canvas(ventana, width=1000, height=1000, bg="white")
+ventana.title("Filósofos Comensales")
+canvas = Canvas(ventana, width=700, height=650, bg="white")
 canvas.pack()
+
 coordenadas = [
-    (500, 200),
-    (740, 360),
-    (620, 680),
-    (380, 680),
-    (260, 360)
+    (350, 120),
+    (520, 250),
+    (440, 470),
+    (260, 470),
+    (180, 250)
 ]
 
 filosofos_graficos = []
@@ -40,24 +41,41 @@ circulos_graficos = []
 tenedores_graficos = []
 titulos_graficos = []
 
-#dibujo de filósofos y tenedores
+# filosofos y tenedores de interfaz
 for i in range(N):
     x, y = coordenadas[i]
-    titulo = canvas.create_text(x, y - 90, text=f"Filósofo {i+1}", font=("Arial", 12), fill="black")
+    titulo = canvas.create_text(x, y - 60, text=f"Filósofo {i+1}", font=("Arial", 12), fill="black")
     titulos_graficos.append(titulo)
-    c = canvas.create_oval(x-70, y-70, x+70, y+70, fill="#5DADE2", width=3, tags=f"circulo_{i}")
+    c = canvas.create_oval(x-45, y-45, x+45, y+45, fill="#5DADE2", width=2, tags=f"circulo_{i}")
     circulos_graficos.append(c)
-    f = canvas.create_text(x, y, text="", font=("Arial", 12), tags=f"filosofo_{i}", justify="center", fill="black")
+    f = canvas.create_text(x, y, text="", font=("Arial", 11), tags=f"filosofo_{i}", justify="center", fill="black")
     filosofos_graficos.append(f)
 
     x1, y1 = coordenadas[i]
     x2, y2 = coordenadas[(i+1) % N]
     xt, yt = (x1 + x2) / 2, (y1 + y2) / 2
-    t = canvas.create_text(xt, yt, text="🥄", font=("Arial", 20), tags=f"tenedor_{i}", fill="gray")
+    t = canvas.create_text(xt, yt, text="🥄", font=("Arial", 18), tags=f"tenedor_{i}", fill="gray")
     tenedores_graficos.append(t)
 
+# descripcion de estados
+canvas.create_rectangle(130, 570, 570, 600, fill="#D5F5E3", outline="black", width=2)
+canvas.create_text(350, 585, text="📘 Descripcion de estados  📘", font=("Arial", 12), fill="black")
 
-mensaje_final = canvas.create_text(500, 100, text="", font=("Arial", 18), fill="green")
+leyendas = [
+    ("#5DADE2", "🧠 Pensando"),
+    ("#F5B041", "⏳ Esperando"),
+    ("#58D68D", "🍝 Comiendo"),
+    ("#95A5A6", "🥄 Tenedor libre"),
+    ("#EC7063", "🍴 Tenedor en uso")
+]
+
+x0, y0 = 50, 610
+for i, (color, texto) in enumerate(leyendas):
+    canvas.create_rectangle(x0 + i*125, y0, x0 + 20 + i*125, y0 + 20, fill=color)
+    canvas.create_text(x0 + 25 + i*125, y0 + 10, text=texto, anchor="w", font=("Arial", 10), fill="black")
+
+#mensaje de que ya comieron todos
+mensaje_final = canvas.create_text(350, 550, text="", font=("Arial", 14), fill="green")
 
 def actualizar_interfaz():
     for i in range(N):
@@ -69,23 +87,24 @@ def actualizar_interfaz():
             text=f"{emote}\n{texto_estado}\n🍽 {comidas}/6"
         )
 
+        emote_tenedor = "🍴" if tenedores_estado[i] else "🥄"
         color_tenedor = "#EC7063" if tenedores_estado[i] else "#95A5A6"
-        canvas.itemconfig(tenedores_graficos[i], fill=color_tenedor)
+        canvas.itemconfig(tenedores_graficos[i], text=emote_tenedor, fill=color_tenedor)
 
     ventana.update()
-
+#logica del filosofo
 def filosofar(i):
     global comidas_realizadas
     while comidas_realizadas[i] < VECES_COMER:
         with mutex:
             filosofos_estado[i] = 'pensando'
         actualizar_interfaz()
-        time.sleep(2.5)
+        time.sleep(2)
 
         with mutex:
             filosofos_estado[i] = 'esperando'
         actualizar_interfaz()
-        time.sleep(2.5)
+        time.sleep(2)
 
         tenedores[i].acquire()
         tenedores[(i+1)%N].acquire()
@@ -97,7 +116,7 @@ def filosofar(i):
             filosofos_estado[i] = 'comiendo'
             comidas_realizadas[i] += 1
         actualizar_interfaz()
-        time.sleep(4.5)
+        time.sleep(3)
 
         tenedores[i].release()
         tenedores[(i+1)%N].release()
@@ -119,26 +138,7 @@ def iniciar():
     for t in hilos:
         t.join()
 
-    canvas.itemconfig(mensaje_final, text="✅ Todos los filósofos ya han comido 6 veces.")
-
-    canvas.create_rectangle(250, 850, 750, 910, fill="#27AE60", outline="black", width=3)
-    canvas.create_text(500, 880, text="✅ Todos los filósofos han comido 6 veces.", font=("Arial", 16), fill="black")
-
-#diseño de estados
-    canvas.create_text(500, 940, text="📘 LEYENDA DE ESTADOS 📘", font=("Arial", 14), fill="black")
-    leyendas = [
-        ("#5DADE2", "🧠 Pensando"),
-        ("#F5B041", "⏳ Esperando"),
-        ("#58D68D", "🍝 Comiendo"),
-        ("#95A5A6", "🥄 Tenedor libre"),
-        ("#EC7063", "🥄 Tenedor en uso")
-    ]
-    x0, y0 = 80, 960
-    for i, (color, texto) in enumerate(leyendas):
-        canvas.create_rectangle(x0 + i*180, y0, x0 + 30 + i*180, y0 + 30, fill=color)
-        canvas.create_text(x0 + 40 + i*180, y0 + 15, text=texto, anchor="w", font=("Arial", 11), fill="black")
-
-    ventana.update()
+    canvas.itemconfig(mensaje_final, text="✅ Todos los filósofos han comido 6 veces")
 
 threading.Thread(target=iniciar).start()
 ventana.mainloop()
