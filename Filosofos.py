@@ -3,18 +3,17 @@ import time
 import tkinter as tk
 from tkinter import Canvas
 
-# --- Configuración inicial ---
+#constantes
 N = 5
 VECES_COMER = 6
 
-# Emoticonos y colores de estado mejorados
 ESTADOS = {
     'pensando': ('🧠', 'Pensando', '#5DADE2'),
     'esperando': ('⏳', 'Esperando', '#F5B041'),
     'comiendo': ('🍝', 'Comiendo', '#58D68D')
 }
 
-# Estados y contadores
+# inicialización de variables
 filosofos_estado = ['pensando'] * N
 comidas_realizadas = [0] * N
 
@@ -23,13 +22,11 @@ tenedores = [threading.Semaphore(1) for _ in range(N)]
 tenedores_estado = [False] * N
 mutex = threading.Lock()
 
-# --- Interfaz gráfica ---
+#interfaz
 ventana = tk.Tk()
 ventana.title("Cena de Filósofos")
 canvas = Canvas(ventana, width=1000, height=1000, bg="white")
 canvas.pack()
-
-# Coordenadas ajustadas
 coordenadas = [
     (500, 200),
     (740, 360),
@@ -43,7 +40,7 @@ circulos_graficos = []
 tenedores_graficos = []
 titulos_graficos = []
 
-# Dibujar filósofos y tenedores
+#dibujo de filósofos y tenedores
 for i in range(N):
     x, y = coordenadas[i]
     titulo = canvas.create_text(x, y - 90, text=f"Filósofo {i+1}", font=("Arial", 12), fill="black")
@@ -59,7 +56,7 @@ for i in range(N):
     t = canvas.create_text(xt, yt, text="🥄", font=("Arial", 20), tags=f"tenedor_{i}", fill="gray")
     tenedores_graficos.append(t)
 
-# Texto del mensaje final (oculto inicialmente)
+
 mensaje_final = canvas.create_text(500, 100, text="", font=("Arial", 18), fill="green")
 
 def actualizar_interfaz():
@@ -127,7 +124,7 @@ def iniciar():
     canvas.create_rectangle(250, 850, 750, 910, fill="#27AE60", outline="black", width=3)
     canvas.create_text(500, 880, text="✅ Todos los filósofos han comido 6 veces.", font=("Arial", 16), fill="black")
 
-    # Leyenda
+#diseño de estados
     canvas.create_text(500, 940, text="📘 LEYENDA DE ESTADOS 📘", font=("Arial", 14), fill="black")
     leyendas = [
         ("#5DADE2", "🧠 Pensando"),
