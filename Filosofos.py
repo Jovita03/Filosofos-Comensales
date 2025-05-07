@@ -13,9 +13,9 @@ ESTADOS = {
     'comiendo': ('🍝', 'Comiendo', '#C8E6C9')
 }
 
-filosofos_estado = ['pensando'] * N
-comidas_realizadas = [0] * N
-tenedores = [threading.Semaphore(1) for _ in range(N)]
+filosofos_estado = ['pensando'] * N #Lista que guarda el estado actual de cada filósofo
+comidas_realizadas = [0] * N #Lista que cuenta cuántas veces ha comido cada filósofo
+tenedores = [threading.Semaphore(1) for _ in range(N)] # Lista de tenedores, cada tenedor es un semáforo
 
 # Interfaz
 ventana = tk.Tk()
@@ -23,7 +23,7 @@ ventana.title("Cena de Filósofos")
 canvas = Canvas(ventana, width=700, height=650, bg="white")
 canvas.pack()
 
-coordenadas = [
+coordenadas = [ # Coordenadas de los filósofos
     (350, 120),
     (520, 250),
     (440, 470),
@@ -31,7 +31,7 @@ coordenadas = [
     (180, 250)
 ]
 
-filosofos_graficos = []
+filosofos_graficos = [] # Lista para guardar los objetos de los filósofos
 circulos_graficos = []
 tenedores_graficos = []
 titulos_graficos = []
@@ -71,7 +71,7 @@ for i, (color, texto) in enumerate(leyendas):
 
 mensaje_final = canvas.create_text(350, 550, text="", font=("Arial", 14), fill="green")
 
-mutex = threading.Lock()
+mutex = threading.Lock() # Mutex para proteger el acceso a la lista de estados y comidas realizadas
 
 def actualizar_interfaz():
     for i in range(N):
@@ -83,7 +83,7 @@ def actualizar_interfaz():
             text=f"{emote}\n{texto_estado}\n🍽 {comidas}/{VECES_COMER}"
         )
 
-    for i in range(N):
+    for i in range(N): 
         izquierdo = i
         derecho = (i + 1) % N
         usado = (filosofos_estado[izquierdo] == 'comiendo' or
@@ -92,23 +92,23 @@ def actualizar_interfaz():
         color_tenedor = "#EC7063" if usado else "#95A5A6"
         canvas.itemconfig(tenedores_graficos[i], text=emote_tenedor, fill=color_tenedor)
 
-def actualizar_interfaz_seguro():
+def actualizar_interfaz_seguro(): #Actualiza el emoji y color del tenedor si está en uso o libre
     ventana.after(0, actualizar_interfaz)
 
 def filosofar(i):
-    while comidas_realizadas[i] < VECES_COMER:
-        with mutex:
+    while comidas_realizadas[i] < VECES_COMER: #ciclo que se repite hasta que el filósofo coma 6 veces
+        with mutex:  #Sirve para proteger el acceso a datos compartidos entre hilos, evitando condiciones de carrera
             filosofos_estado[i] = 'pensando'
         actualizar_interfaz_seguro()
         time.sleep(4)
 
-        with mutex:
+        with mutex: #Objeto que garantiza que solo un hilo acceda a una sección crítica a la vez
             filosofos_estado[i] = 'esperando'
         actualizar_interfaz_seguro()
         time.sleep(4)
 
-        tenedores[i].acquire()
-        tenedores[(i+1) % N].acquire()
+        tenedores[i].acquire() # agarra el tenedor izquierdo y ademas es el mrtodo que bloquea el hilo hasta que pueda obtener el recurso 
+        tenedores[(i+1) % N].acquire()  #
 
         with mutex:
             filosofos_estado[i] = 'comiendo'
@@ -117,20 +117,20 @@ def filosofar(i):
         time.sleep(6)
 
         tenedores[i].release()
-        tenedores[(i+1) % N].release()
+        tenedores[(i+1) % N].release() #libera el tenedor izquierdo y derecho
 
         with mutex:
             filosofos_estado[i] = 'pensando'
         actualizar_interfaz_seguro()
 
     # Verifica si todos terminaron
-    if all(c == VECES_COMER for c in comidas_realizadas):
+    if all(c == VECES_COMER for c in comidas_realizadas): # si para cada comida realizada es igual a 6 entonces se mostrara el mensaje 
         ventana.after(0, lambda: canvas.itemconfig(mensaje_final, text="✅ Todos los filósofos han comido 6 veces"))
 
 def iniciar():
     for i in range(N):
         t = threading.Thread(target=filosofar, args=(i,))
-        t.daemon = True  # Para que no bloqueen al cerrar ventana
+        t.daemon = True  # hace que el hilo termine cuando cierre la ventana.
         t.start()
 
 # Iniciar después de que la ventana arranca
