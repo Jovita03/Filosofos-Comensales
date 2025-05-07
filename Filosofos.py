@@ -13,7 +13,6 @@ ESTADOS = {
     'comiendo': ('🍝', 'Comiendo', '#C8E6C9')
 }
 
-# Variables globales
 filosofos_estado = ['pensando'] * N
 comidas_realizadas = [0] * N
 tenedores = [threading.Semaphore(1) for _ in range(N)]
@@ -85,7 +84,6 @@ def actualizar_interfaz():
         )
 
     for i in range(N):
-        # Tenedor i está entre filósofo i y (i+1)%N
         izquierdo = i
         derecho = (i + 1) % N
         usado = (filosofos_estado[izquierdo] == 'comiendo' or
@@ -94,18 +92,19 @@ def actualizar_interfaz():
         color_tenedor = "#EC7063" if usado else "#95A5A6"
         canvas.itemconfig(tenedores_graficos[i], text=emote_tenedor, fill=color_tenedor)
 
-    ventana.update()
+def actualizar_interfaz_seguro():
+    ventana.after(0, actualizar_interfaz)
 
 def filosofar(i):
     while comidas_realizadas[i] < VECES_COMER:
         with mutex:
             filosofos_estado[i] = 'pensando'
-        actualizar_interfaz()
+        actualizar_interfaz_seguro()
         time.sleep(4)
 
         with mutex:
             filosofos_estado[i] = 'esperando'
-        actualizar_interfaz()
+        actualizar_interfaz_seguro()
         time.sleep(4)
 
         tenedores[i].acquire()
@@ -114,7 +113,7 @@ def filosofar(i):
         with mutex:
             filosofos_estado[i] = 'comiendo'
             comidas_realizadas[i] += 1
-        actualizar_interfaz()
+        actualizar_interfaz_seguro()
         time.sleep(6)
 
         tenedores[i].release()
@@ -122,19 +121,18 @@ def filosofar(i):
 
         with mutex:
             filosofos_estado[i] = 'pensando'
-        actualizar_interfaz()
+        actualizar_interfaz_seguro()
+
+    # Verifica si todos terminaron
+    if all(c == VECES_COMER for c in comidas_realizadas):
+        ventana.after(0, lambda: canvas.itemconfig(mensaje_final, text="✅ Todos los filósofos han comido 6 veces"))
 
 def iniciar():
-    hilos = []
     for i in range(N):
         t = threading.Thread(target=filosofar, args=(i,))
-        hilos.append(t)
+        t.daemon = True  # Para que no bloqueen al cerrar ventana
         t.start()
 
-    for t in hilos:
-        t.join()
-
-    canvas.itemconfig(mensaje_final, text="✅ Todos los filósofos han comido 6 veces")
-
-threading.Thread(target=iniciar).start()
+# Iniciar después de que la ventana arranca
+ventana.after(100, iniciar)
 ventana.mainloop()
